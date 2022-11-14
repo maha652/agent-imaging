@@ -34,6 +34,15 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.dcm4che/dcm4che-core -->
+		<dependency>
+		    <groupId>org.dcm4che</groupId>
+		    <artifactId>dcm4che-core</artifactId>
+		    <version>5.29.0</version>
+		</dependency>
+
+		
 	</dependencies>
 
 	<build>
@@ -51,25 +60,6 @@
 					</image>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.springframework.experimental</groupId>
-				<artifactId>spring-aot-maven-plugin</artifactId>
-				<version>${spring-native.version}</version>
-				<executions>
-					<execution>
-						<id>test-generate</id>
-						<goals>
-							<goal>test-generate</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>generate</id>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 	<repositories>
@@ -81,6 +71,10 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		 <repository>
+            <id>dcm4che-repo</id>
+            <url>https://www.dcm4che.org/maven2/</url>
+        </repository>    
 	</repositories>
 	<pluginRepositories>
 		<pluginRepository>
@@ -93,47 +87,6 @@
 		</pluginRepository>
 	</pluginRepositories>
 
-	<profiles>
-		<profile>
-			<id>native</id>
-			<properties>
-				<repackage.classifier>exec</repackage.classifier>
-				<native-buildtools.version>0.9.13</native-buildtools.version>
-			</properties>
-			<dependencies>
-				<dependency>
-					<groupId>org.junit.platform</groupId>
-					<artifactId>junit-platform-launcher</artifactId>
-					<scope>test</scope>
-				</dependency>
-			</dependencies>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.graalvm.buildtools</groupId>
-						<artifactId>native-maven-plugin</artifactId>
-						<version>${native-buildtools.version}</version>
-						<extensions>true</extensions>
-						<executions>
-							<execution>
-								<id>test-native</id>
-								<phase>test</phase>
-								<goals>
-									<goal>test</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>build-native</id>
-								<phase>package</phase>
-								<goals>
-									<goal>build</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+
 
 </project>
