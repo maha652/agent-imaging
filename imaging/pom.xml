@@ -21,7 +21,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<artifactId>spring-boot-starter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.experimental</groupId>
@@ -41,6 +41,18 @@
 		    <artifactId>dcm4che-core</artifactId>
 		    <version>5.29.0</version>
 		</dependency>
+		
+		
+		
+		
+		<dependency>
+	           <groupId>com.pixelmed</groupId>
+	           <artifactId>pixelmed</artifactId>
+	           <version>20220117</version>
+	           <scope>system</scope>
+	           <systemPath>C:/Users/m_graa/agent-imaging/imaging/libs/pixelmed.jar</systemPath>
+	       </dependency>
+	
 
 		
 	</dependencies>
@@ -90,3 +102,5 @@
 
 
 </project>
+
+

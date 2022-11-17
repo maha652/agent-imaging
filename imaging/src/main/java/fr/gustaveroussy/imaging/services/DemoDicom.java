@@ -12,7 +12,9 @@ import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.io.DicomInputStream.IncludeBulkData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
+@Service
 public class DemoDicom {
 
 	private static final Logger logger = LoggerFactory.getLogger(DemoDicom.class);
@@ -47,3 +49,11 @@ public class DemoDicom {
 	}
 
 }
+
+
+
+
+
+
+
+

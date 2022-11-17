@@ -25,11 +25,14 @@ public class ImagingApplication implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 
 
-		String dicomFilePath = "C:\\Users\\g_jules-clement\\Documents\\PACS\\200910802BZ\\MR\\20190807\\CDR-IRM-MEMBRES\\AX-T2-FS-DIXON-3-MM_F\\1.3.12.2.1107.5.2.18.42239.2019080716095943021807871.dcm";
+		String dicomFilePath = "C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\1.3.12.2.1107.5.2.18.42239.2019080716095943021807871.dcm";
 		
 		demoDicom.demo(dicomFilePath);
 		
 		logger.info("DONE");
 	}
 
+
 }
+
+
