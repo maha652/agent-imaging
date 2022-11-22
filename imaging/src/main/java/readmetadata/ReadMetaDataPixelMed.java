@@ -1,12 +1,24 @@
 package readmetadata;
-
-
 import com.pixelmed.dicom.*;
 import com.pixelmed.display.SourceImage;
- 
+import java.io.BufferedReader;
+
+
+
+import fr.gustaveroussy.rcp.model.RedcapAlterationImport;
+
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.pixelmed.dicom.AttributeList;
@@ -53,15 +65,46 @@ public class ReadMetaDataPixelMed {
 	        metaData.put("Is Grayscale", String.valueOf(img.isGrayscale()));
 	        metaData.put("Pixel Data present", String.valueOf(!getTagInformation(TagFromName.PixelData).isEmpty()));
 	        return metaData;
+	        
+	        
 	    }
-	 
-	    private static String getTagInformation(AttributeTag tag) {
+	    
+		private static String getTagInformation(AttributeTag tag) {
 	        return Attribute.getDelimitedStringValuesOrDefault(attributeList, tag, "NOT FOUND");
 	    }
+	
+		
+		   public class Filewriter { 
+			   
+			   private static void  Filewriter(String[] args) throws IOException {
+		    	// TODO Auto-generated method stub
+		    	FileWriter fw =new FileWriter(new File ("C:\\Users\\m_graa\\agent-imaging\\metadata.txt"));
+		    	fw.write("metaData");
+		    	fw.flush();
+		    	fw.close();
+		    	
+		    	
+		    	}
+		    	
+		   }
 		
 		
-				
+		
+		
+		
+		
+}
+		
+	  
+		
+		
+		  
+	 
 
-	}
+	
+	    	
+	    
+
+	    
 
 
