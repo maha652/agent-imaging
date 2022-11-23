@@ -29,6 +29,8 @@ public class ImagingApplication implements CommandLineRunner {
 		
 		demoDicom.demo(dicomFilePath);
 		
+		
+		
 		logger.info("DONE");
 	}
 

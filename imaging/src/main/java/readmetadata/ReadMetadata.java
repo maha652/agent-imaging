@@ -1,53 +1,19 @@
 package readmetadata;
-import com.pixelmed.dicom.*;
-import com.pixelmed.display.SourceImage;
- 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.pixelmed.dicom.Attribute;
+import com.pixelmed.dicom.AttributeList;
+import com.pixelmed.dicom.AttributeTag;
+import com.pixelmed.dicom.DicomException;
+import com.pixelmed.dicom.TagFromName;
+import com.pixelmed.display.SourceImage;
 
-
-public class ReadMetaDataPixelMed {
+public class ReadMetadata {
 	
-
-	@Value("${path.to.dc.file}")
-	private static String filePath ;
-	
-	@Value("${path.to.write.file}")
-	private static String writeFile ;
-	
-	private static AttributeList attributeList = new AttributeList();
-	public static void main(String[] args)throws DicomException, IOException  {
-		
-		
-		 //String dcmFilePath = "C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\1.3.12.2.1107.5.2.18.42239.2019080716095943021807871.dcm";//
-	        
-	     //readAttributes(dcmFilePath);//
-		
-		attributeList.read(filePath);
-		// attributeList.read(new File("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\1.3.12.2.1107.5.2.18.42239.2019080716095943021807871.dcm"));//
-		
-	     Map<String, String> metaData = readMetadata();
-	     for (Map.Entry<String, String> entry :metaData.entrySet()) {
-	                System.out.println(entry.getKey()+" : "+entry.getValue());
-	           
-	     }   
-	     Filewriter fw =  new Filewriter ();
-	     //fw.exportToFile("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\metadata.txt",metaData.toString()); //
-	     
-	     fw.exportToFile(writeFile,metaData.toString());
-	     
-	     }
-	
-	 
-	  
-	    
-	 
-	    private static Map<String, String> readMetadata() throws DicomException {
+	static AttributeList attributeList = new AttributeList();
+	 public static Map<String, String> readMetadata() throws DicomException {
 	        Map<String, String> metaData = new LinkedHashMap<>();
 	        metaData.put("Patient Name", getTagInformation(TagFromName.PatientName));
 	        metaData.put("Patient ID", getTagInformation(TagFromName.PatientID));
@@ -71,20 +37,15 @@ public class ReadMetaDataPixelMed {
 	        
 	    }
 
-
-
-
-
-	
-		private static String getTagInformation(AttributeTag tag) {
-	        return Attribute.getDelimitedStringValuesOrDefault(attributeList, tag, "NOT FOUND");
+		public static String getTagInformation(AttributeTag tag) {
+			AttributeList attributeList = new AttributeList();
+	       
+			return Attribute.getDelimitedStringValuesOrDefault(attributeList, tag, "NOT FOUND");
 	    }
+
+	}
+
 	
-		
-		
-		    	
-		   
-		
 
 
-}
+
