@@ -1,35 +1,38 @@
 package readmetadata;
 import com.pixelmed.dicom.*;
 import com.pixelmed.display.SourceImage;
- 
+
+import fr.gustaveroussy.imaging.ImagingApplication;
+import fr.gustaveroussy.imaging.services.DemoDicom;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 
 public class ReadMetaDataPixelMed {
 	
+	public static final Logger logger = LoggerFactory.getLogger(ReadMetaDataPixelMed.class);
+	
+	static AttributeList attributeList = new AttributeList() ;
+	/*@Value("${path.to.dc.file}")
+	private  String filePath ; */
+	
+	/*@Value("${path.to.write.file}")
+	private  String writeFile ;*/
+	
+	 public void test(String tag ) throws DicomException,IOException{
+		
+		AttributeList attributeList = new AttributeList() ;
 
-	@Value("${path.to.dc.file}")
-	private static String filePath ;
-	
-	@Value("${path.to.write.file}")
-	private static String writeFile ;
-	
-	private static AttributeList attributeList = new AttributeList();
-	public static void main(String[] args)throws DicomException, IOException  {
 		
-		
-		 //String dcmFilePath = "C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\1.3.12.2.1107.5.2.18.42239.2019080716095943021807871.dcm";//
-	        
-	     //readAttributes(dcmFilePath);//
-		
-		attributeList.read(filePath);
-		// attributeList.read(new File("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\1.3.12.2.1107.5.2.18.42239.2019080716095943021807871.dcm"));//
+		 attributeList.read(new File("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\1.3.12.2.1107.5.2.18.42239.2019080716095943021807871.dcm"));
 		
 	     Map<String, String> metaData = readMetadata();
 	     for (Map.Entry<String, String> entry :metaData.entrySet()) {
@@ -37,9 +40,9 @@ public class ReadMetaDataPixelMed {
 	           
 	     }   
 	     Filewriter fw =  new Filewriter ();
-	     //fw.exportToFile("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\metadata.txt",metaData.toString()); //
+	     fw.exportToFile("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\metadata.txt",metaData.toString()); 
 	     
-	     fw.exportToFile(writeFile,metaData.toString());
+	    
 	     
 	     }
 	
@@ -47,7 +50,7 @@ public class ReadMetaDataPixelMed {
 	  
 	    
 	 
-	    private static Map<String, String> readMetadata() throws DicomException {
+	    private static  Map<String, String> readMetadata() throws DicomException {
 	        Map<String, String> metaData = new LinkedHashMap<>();
 	        metaData.put("Patient Name", getTagInformation(TagFromName.PatientName));
 	        metaData.put("Patient ID", getTagInformation(TagFromName.PatientID));
