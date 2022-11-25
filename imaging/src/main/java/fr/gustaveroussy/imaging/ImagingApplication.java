@@ -28,7 +28,7 @@ public class ImagingApplication implements CommandLineRunner {
 
 	public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.class);
 	
-	AttributeList attributeList = new AttributeList() ;
+	private  AttributeList attributeList = new AttributeList() ;
 	
 	@Value("${path.to.dc.file}")
 	private  String filePath ; 
@@ -37,7 +37,6 @@ public class ImagingApplication implements CommandLineRunner {
 	private  String writeFile ;
 	
 	
-	@Autowired
 	
 	public static void main(String[] args) {
 		SpringApplication.run(ImagingApplication.class, args);
@@ -46,11 +45,9 @@ public class ImagingApplication implements CommandLineRunner {
 	@Override
 	public void run(String... args) throws Exception {
 		
-		AttributeList attributeList = new AttributeList() ;
+	
+		attributeList.read(new File(filePath));
 
-		
-		 attributeList.read(new File(filePath));
-		
 	     Map<String, String> metaData = readMetadata();
 	     for (Map.Entry<String, String> entry :metaData.entrySet()) {
 	                System.out.println(entry.getKey()+" : "+entry.getValue());
@@ -63,9 +60,6 @@ public class ImagingApplication implements CommandLineRunner {
 	     
 	     }
 	
-	 
-	  
-	    
 	 
 	    private   Map<String, String> readMetadata() throws DicomException {
 	        Map<String, String> metaData = new LinkedHashMap<>();
@@ -80,12 +74,17 @@ public class ImagingApplication implements CommandLineRunner {
 	        metaData.put("Bits Allocated", getTagInformation(TagFromName.BitsAllocated));
 	        metaData.put("Bits Stored", getTagInformation(TagFromName.BitsStored));
 	        metaData.put("High Bit", getTagInformation(TagFromName.HighBit));
+	        metaData.put("Image type ", getTagInformation(TagFromName.ImageType ));
+	        metaData.put("otherPatientNames ", getTagInformation(TagFromName.OtherPatientNames  ));
+	        metaData.put("PatientAge", getTagInformation(TagFromName.PatientAge  ));
 	        SourceImage img = new com.pixelmed.display.SourceImage(attributeList);
+	        
 	        metaData.put("Number of frames", String.valueOf(img.getNumberOfFrames()));
 	        metaData.put("Width", String.valueOf(img.getWidth()));
 	        metaData.put("Height", String.valueOf(img.getHeight()));
 	        metaData.put("Is Grayscale", String.valueOf(img.isGrayscale()));
 	        metaData.put("Pixel Data present", String.valueOf(!getTagInformation(TagFromName.PixelData).isEmpty()));
+	        
 	        return metaData;
 	    }
 	        private  String getTagInformation(AttributeTag tag) {
