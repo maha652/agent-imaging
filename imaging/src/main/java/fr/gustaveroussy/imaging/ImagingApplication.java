@@ -40,6 +40,7 @@ public class ImagingApplication implements CommandLineRunner {
 	
 	public static void main(String[] args) {
 		SpringApplication.run(ImagingApplication.class, args);
+		
 	}
 
 	@Override
@@ -59,6 +60,7 @@ public class ImagingApplication implements CommandLineRunner {
 	    
 	     
 	     }
+	
 	
 	 
 	    private   Map<String, String> readMetadata() throws DicomException {
@@ -90,10 +92,12 @@ public class ImagingApplication implements CommandLineRunner {
 	        private  String getTagInformation(AttributeTag tag) {
 		        return Attribute.getDelimitedStringValuesOrDefault(attributeList, tag, "NOT FOUND");
 		    }
+	
+			
 		
 		
-		
-		
+	    	
+			
 
 
 		
