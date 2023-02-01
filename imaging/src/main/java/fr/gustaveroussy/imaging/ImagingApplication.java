@@ -1,6 +1,7 @@
 package fr.gustaveroussy.imaging;
 
 import java.io.File;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -20,7 +21,6 @@ import com.pixelmed.dicom.TagFromName;
 import com.pixelmed.display.SourceImage;
 
 import fr.gustaveroussy.imaging.services.DemoDicom;
-import readmetadata.Filewriter;
 
 @SpringBootApplication
 public class ImagingApplication implements CommandLineRunner {
@@ -47,7 +47,7 @@ public class ImagingApplication implements CommandLineRunner {
 	public void run(String... args) throws Exception {
 		
 	
-		attributeList.read(new File(filePath));
+		 attributeList.read(new File(filePath));
 
 	     Map<String, String> metaData = readMetadata();
 	     for (Map.Entry<String, String> entry :metaData.entrySet()) {
@@ -67,18 +67,35 @@ public class ImagingApplication implements CommandLineRunner {
 	        Map<String, String> metaData = new LinkedHashMap<>();
 	        metaData.put("Patient Name", getTagInformation(TagFromName.PatientName));
 	        metaData.put("Patient ID", getTagInformation(TagFromName.PatientID));
-	        metaData.put("Transfer Syntax", getTagInformation(TagFromName.TransferSyntaxUID));
-	        metaData.put("SOP Class", getTagInformation(TagFromName.SOPClassUID));
 	        metaData.put("Modality", getTagInformation(TagFromName.Modality));
-	        metaData.put("Samples Per Pixel", getTagInformation(TagFromName.SamplesPerPixel));
 	        metaData.put("Photometric Interpretation", getTagInformation(TagFromName.PhotometricInterpretation));
-	        metaData.put("Pixel Spacing", getTagInformation(TagFromName.PixelSpacing));
-	        metaData.put("Bits Allocated", getTagInformation(TagFromName.BitsAllocated));
-	        metaData.put("Bits Stored", getTagInformation(TagFromName.BitsStored));
-	        metaData.put("High Bit", getTagInformation(TagFromName.HighBit));
 	        metaData.put("Image type ", getTagInformation(TagFromName.ImageType ));
 	        metaData.put("otherPatientNames ", getTagInformation(TagFromName.OtherPatientNames  ));
 	        metaData.put("PatientAge", getTagInformation(TagFromName.PatientAge  ));
+	        metaData.put("PatientBirthDate", getTagInformation(TagFromName.PatientBirthDate  ));
+	        metaData.put("PatientBirthDateAlternativeCalendar", getTagInformation(TagFromName.PatientBirthDateInAlternativeCalendar ));
+	        metaData.put("PatientBodyMassIndex", getTagInformation(TagFromName.PatientBodyMassIndex ));
+	        metaData.put("PatientAlternativeCalendar", getTagInformation(TagFromName.PatientAlternativeCalendar ));
+	        metaData.put("PatientBreedCodeSequence", getTagInformation(TagFromName.PatientBreedCodeSequence ));
+	        metaData.put("PatientBreedDescription", getTagInformation(TagFromName.PatientBreedDescription ));
+	        metaData.put("PatientComments ", getTagInformation(TagFromName.PatientComments ));
+	        metaData.put("PatientDeathDateInAlternativeCalendar", getTagInformation(TagFromName.PatientDeathDateInAlternativeCalendar ));
+	        metaData.put("PatientIdentityRemoved ", getTagInformation(TagFromName.PatientIdentityRemoved ));
+	        metaData.put("PatientOrientation", getTagInformation(TagFromName.PatientOrientation ));
+	        metaData.put("PatientPosition", getTagInformation(TagFromName.PatientPosition));
+	        metaData.put("PatientSex", getTagInformation(TagFromName.PatientSex ));
+	        metaData.put("PatientSexNeutered", getTagInformation(TagFromName.PatientSexNeutered ));
+	        metaData.put("PatientSize", getTagInformation(TagFromName.PatientSize ));
+	        metaData.put("PatientSizeCodeSequence", getTagInformation(TagFromName.PatientSizeCodeSequence ));
+	        metaData.put("PatientSpeciesCodeSequence", getTagInformation(TagFromName.PatientSpeciesCodeSequence ));
+	        metaData.put("PatientSpeciesDescription ", getTagInformation(TagFromName.PatientSpeciesDescription ));
+	        metaData.put("PatientState", getTagInformation(TagFromName.PatientState ));
+	        metaData.put("PatientWeight", getTagInformation(TagFromName.PatientWeight ));
+	        
+	        attributeList.entrySet().forEach(e -> {
+	        	System.out.println(e.getKey().toString(attributeList.getDictionary()));
+	        	System.out.println(e.getValue().toString());
+	        });
 	        SourceImage img = new com.pixelmed.display.SourceImage(attributeList);
 	        
 	        metaData.put("Number of frames", String.valueOf(img.getNumberOfFrames()));
@@ -87,20 +104,11 @@ public class ImagingApplication implements CommandLineRunner {
 	        metaData.put("Is Grayscale", String.valueOf(img.isGrayscale()));
 	        metaData.put("Pixel Data present", String.valueOf(!getTagInformation(TagFromName.PixelData).isEmpty()));
 	        
-	        return metaData;
+	        return metaData; 
 	    }
 	        private  String getTagInformation(AttributeTag tag) {
 		        return Attribute.getDelimitedStringValuesOrDefault(attributeList, tag, "NOT FOUND");
-		    }
-	
-			
-		
-		
-	    	
-			
-
-
-		
+		    }	
 
 	}
 
