@@ -1,6 +1,7 @@
 package fr.gustaveroussy.imaging;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,11 +20,15 @@ import com.pixelmed.dicom.AttributeTag;
 import com.pixelmed.dicom.DicomException;
 import com.pixelmed.dicom.TagFromName;
 import com.pixelmed.display.SourceImage;
+import com.pixelmed.dicom.DicomInputStream;
+import com.pixelmed.dicom.PersonNameAttribute;
 
 import fr.gustaveroussy.imaging.services.DemoDicom;
 
 @SpringBootApplication
 public class ImagingApplication implements CommandLineRunner {
+	int arg ;
+	 
 
 
 	public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.class);
@@ -35,6 +40,10 @@ public class ImagingApplication implements CommandLineRunner {
 	
 	@Value("${path.to.write.file}")
 	private  String writeFile ;
+
+
+
+	
 	
 	
 	
@@ -92,24 +101,43 @@ public class ImagingApplication implements CommandLineRunner {
 	        metaData.put("PatientState", getTagInformation(TagFromName.PatientState ));
 	        metaData.put("PatientWeight", getTagInformation(TagFromName.PatientWeight ));
 	        
+	     
+	        
+	        
 	        attributeList.entrySet().forEach(e -> {
 	        	System.out.println(e.getKey().toString(attributeList.getDictionary()));
 	        	System.out.println(e.getValue().toString());
 	        });
-	        SourceImage img = new com.pixelmed.display.SourceImage(attributeList);
 	        
-	        metaData.put("Number of frames", String.valueOf(img.getNumberOfFrames()));
-	        metaData.put("Width", String.valueOf(img.getWidth()));
-	        metaData.put("Height", String.valueOf(img.getHeight()));
-	        metaData.put("Is Grayscale", String.valueOf(img.isGrayscale()));
-	        metaData.put("Pixel Data present", String.valueOf(!getTagInformation(TagFromName.PixelData).isEmpty()));
+
+	    	   Attribute patientNameAttr = new PersonNameAttribute(TagFromName.PatientName);
+		        patientNameAttr.addValue("ANONYMIZED");
+		        attributeList.put(TagFromName.PatientName,patientNameAttr);
+	      
 	        
-	        return metaData; 
+	      
+	       return metaData;  
+	   
 	    }
+	    
+	    
+	  
+	    
+	    
+	    
+	    
 	        private  String getTagInformation(AttributeTag tag) {
 		        return Attribute.getDelimitedStringValuesOrDefault(attributeList, tag, "NOT FOUND");
-		    }	
+	
+	        
+	        }	
 
+	        
+	            
+	    
+	        
+	        
+	        
 	}
 
 
