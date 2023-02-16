@@ -9,6 +9,7 @@ import com.pixelmed.dicom.Attribute;
 import com.pixelmed.dicom.AttributeList;
 import com.pixelmed.dicom.DicomException;
 import com.pixelmed.dicom.DicomInputStream;
+import com.pixelmed.dicom.DicomOutputStream;
 import com.pixelmed.dicom.PersonNameAttribute;
 import com.pixelmed.dicom.SpecificCharacterSet;
 import com.pixelmed.dicom.StringAttribute;
@@ -24,7 +25,7 @@ public class DicomReadAnonymize {
 
 	public static void main(String[] args) throws IOException, DicomException {
 	
-		String filePath = "C:\\\\Users\\\\m_graa\\\\Desktop\\\\stage_bioinfo\\\\1.3.12.2.1107.5.2.18.42239.2019080716095943021807871.dcm";
+		String filePath = "C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\1.3.12.2.1107.5.2.18.42239.2019080716095943021807871.dcm";
 	    File file = new File(filePath);
 
 
@@ -47,13 +48,13 @@ public class DicomReadAnonymize {
 	    
 	    
 	 // Save anonymized DICOM file
-	    File anonymizedFile = new File("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\anonym.txt");
+	    File anonymizedFile = new File("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\anonym.dcm");
 	    
 	    
 	    
 	    attrs.write(anonymizedFile  ,  TransferSyntax.ExplicitVRLittleEndian, true, true);
-
 	    
+	    //DicomOutputStream ouptput = new DicomOutputStream(null, filePath, filePath)
 
 	    
 	}

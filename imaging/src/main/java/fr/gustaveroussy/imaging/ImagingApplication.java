@@ -27,7 +27,6 @@ import fr.gustaveroussy.imaging.services.DemoDicom;
 
 @SpringBootApplication
 public class ImagingApplication implements CommandLineRunner {
-	int arg ;
 	 
 
 
@@ -41,13 +40,7 @@ public class ImagingApplication implements CommandLineRunner {
 	@Value("${path.to.write.file}")
 	private  String writeFile ;
 
-
-
-	
-	
-	
-	
-	public static void main(String[] args) {
+ public static void main(String[] args) {
 		SpringApplication.run(ImagingApplication.class, args);
 		
 	}
@@ -71,8 +64,11 @@ public class ImagingApplication implements CommandLineRunner {
 	     }
 	
 	
-	 
-	    private   Map<String, String> readMetadata() throws DicomException {
+	
+	
+	
+		 
+	    private   Map<String, String> readMetadata() throws DicomException, IOException {
 	        Map<String, String> metaData = new LinkedHashMap<>();
 	        metaData.put("Patient Name", getTagInformation(TagFromName.PatientName));
 	        metaData.put("Patient ID", getTagInformation(TagFromName.PatientID));
@@ -99,13 +95,12 @@ public class ImagingApplication implements CommandLineRunner {
 	        metaData.put("PatientSpeciesCodeSequence", getTagInformation(TagFromName.PatientSpeciesCodeSequence ));
 	        metaData.put("PatientSpeciesDescription ", getTagInformation(TagFromName.PatientSpeciesDescription ));
 	        metaData.put("PatientState", getTagInformation(TagFromName.PatientState ));
-	        metaData.put("PatientWeight", getTagInformation(TagFromName.PatientWeight ));
+	        metaData.put("PatientWeight", getTagInformation(TagFromName.PatientAddress  ));
 	        
 	     
-	        
-	        
+	       
 	        attributeList.entrySet().forEach(e -> {
-	        	System.out.println(e.getKey().toString(attributeList.getDictionary()));
+	        	System.out.println(e.getKey().toString());
 	        	System.out.println(e.getValue().toString());
 	        });
 	        
@@ -113,15 +108,18 @@ public class ImagingApplication implements CommandLineRunner {
 	    	   Attribute patientNameAttr = new PersonNameAttribute(TagFromName.PatientName);
 		        patientNameAttr.addValue("ANONYMIZED");
 		        attributeList.put(TagFromName.PatientName,patientNameAttr);
+		       
+		        
+		   
+			     
+		   //return  (Map<String, String>) patientNameAttr ; //
 	      
-	        
-	      
-	       return metaData;  
+	      return metaData;  
 	   
 	    }
 	    
 	    
-	  
+	     
 	    
 	    
 	    

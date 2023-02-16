@@ -11,7 +11,7 @@ import org.dcm4che3.io.DicomInputStream;
 public class Anonymisation {
 	
 	public static void main(String[] args) throws IOException {
-	    String filePath = "path/to/dicom/file.dcm";
+	    String filePath = "C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\1.3.12.2.1107.5.2.18.42239.2019080716095943021807871.dcm";
 	    File file = new File(filePath);
 
 	    DicomInputStream dis = new DicomInputStream(file);
@@ -23,8 +23,8 @@ public class Anonymisation {
 	    attrs.setString(Tag.PatientName, null, "ANONYMIZED");
 
 	
-	    File anonymizedFile = new File("path/to/anonymized/dicom/file.dcm");
-	    dis.writeDataset(anonymizedFile, attrs);
+	    File anonymizedFile = new File("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\file.dcm");
+	    //dis.writeDataset(anonymizedFile, attrs);
 	  }
 
 	

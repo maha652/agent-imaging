@@ -9,10 +9,10 @@ import com.pixelmed.dicom.DicomException;
 public class ReadAttributes {
 
 	AttributeList attributeList = new AttributeList();
-	public void  exportToFile(String dcmFilePath ) throws IOException, DicomException {
+	public void  exportToFile(String filePath ) throws IOException, DicomException {
 		
 		
-		 attributeList.read(new File(dcmFilePath));
+		 attributeList.read(new File(filePath));
 		
 		
 	}
