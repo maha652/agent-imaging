@@ -81,7 +81,7 @@ public void run(String... args) throws Exception {
 			writeAttributesToFile( beforeanonymisation, fileName);
 			anonymizePatientAttributes(attributes);
 		
-		    try (DicomOutputStream dos = new DicomOutputStream(new FileOutputStream(outputFile), null)) {
+		    try (DicomOutputStream dos = new DicomOutputStream(new FileOutputStream(outputFile), "tsuid")) {
             	 
             	 dos.writeDataset( attributes, dicomInputStream.readFileMetaInformation());
              }
@@ -118,7 +118,7 @@ private void writeAttributesToFile(Attributes beforeanonymisation, String fileNa
     	
     	for (int tag : attributes.tags()) {
     		
-    		
+    		logger.debug(" tag : {}" , tag);
     		
     	    VR vr = attributes.getVR(tag); 
     	    
@@ -128,48 +128,50 @@ private void writeAttributesToFile(Attributes beforeanonymisation, String fileNa
     			     continue;
     			}
     	else if (tag == Tag.TransferSyntaxUID   ) {
-    	 
+    		logger.debug(" transferSyntaxUID_tag : {}" , tag);
 			 
     	        continue;
 			 }    
     	    
-    	    else if (vr != null && vr == (VR.PN)) { 
+    	    else if( (vr != null && vr == (VR.PN))) { 
     	    
     	    	attributes.setString(tag, VR.PN, "ANONYME");
+    	    	logger.debug(" VR.PN : {}" , tag);
     	    	
-    	    } else if (vr != null && vr == (VR.DA) || vr.equals(VR.DT)) { 
+    	    } else if ((vr != null && vr.equals(VR.DA) || vr.equals(VR.DT))) { 
     	    	attributes.setString(tag, vr, "19000101");
-    	    } else if (vr != null && vr ==(VR.CS)  ) { 
+    	    	logger.debug(" VR.DA : {}" , tag);
+    	    } else if ((vr != null && vr.equals(VR.CS)  )) { 
     	    	attributes.setString(tag, vr, "");
-    	    } else if (vr != null && vr ==(VR.SH)) {
+    	    	logger.debug(" VR.CS : {}" , tag);
+    	    } else if ((vr != null && vr.equals(VR.SH))) {
     	    	attributes.setString(tag, vr, "");
-    	    } else if (vr != null &&  vr ==(VR.LO)) { 
+    	    	logger.debug(" VR.SH : {}" , tag);
+    	    } else if ((vr != null &&  vr.equals(VR.LO)) ){ 
     	    	attributes.setString(tag, vr, "");
-    	    } else if (vr != null && vr ==(VR.SQ)) {
+    	    	logger.debug(" VR.LO : {}" , tag);
+    	    } else if ((vr != null && vr.equals(VR.SQ))) {
     	    	attributes.remove(tag);
-    	    } else if (vr != null && vr ==(VR.OW) || vr ==(VR.OF) || vr == (VR.OB) || vr ==(VR.UN)) { 
+    	    	logger.debug(" VR.SQ : {}" , tag);
+    	    } else if ((vr != null && vr.equals(VR.OW) || vr.equals(VR.OF) || vr.equals(VR.OB) || vr.equals(VR.UN))) { 
     	    	attributes.remove(tag); 
+    	    	logger.debug(" VR.OW, OF, OB ,UN : {}" , tag);
     	    
     	    }
     	    
-    	    
+    	logger.debug("anonymisation" , tag);  
     	    
     	}
     	return ;
+    	
+    	
+    	
     }
+    
+  
     	
     
     
-    
-    
-    
-    
-    	    
-  
-	
-	
-	
-	
 }
 	
 	
