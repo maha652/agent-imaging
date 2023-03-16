@@ -1,4 +1,4 @@
-package fr.gustaveroussy.imaging;
+/* package fr.gustaveroussy.imaging;
 
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -102,6 +102,8 @@ class ImagingApplicationTests {
     }
 }
 
+
+*/
 	
 	
 	

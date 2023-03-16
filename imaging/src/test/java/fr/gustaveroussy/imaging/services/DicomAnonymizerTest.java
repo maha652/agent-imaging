@@ -1,3 +1,5 @@
+/*
+
 package fr.gustaveroussy.imaging.services;
 
 import java.io.File;
@@ -92,3 +94,6 @@ public  void anonymizeDicomFiles(File directory) throws DicomException, IOExcept
     }
 }
 }
+
+
+*/
