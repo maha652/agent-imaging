@@ -37,10 +37,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 public class ImagingApplication implements CommandLineRunner {
 
-public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.class);
-
-
-	private static final Object[] String = null;
+	static final Logger logger = LoggerFactory.getLogger(ImagingApplication.class);
 	
 
 	
@@ -76,12 +73,13 @@ public void run(String... args) throws Exception {
 		  try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream((inputFile)))) {
 			
 			Attributes attributes = dicomInputStream.readFileMetaInformation();
-			Attributes beforeanonymisation = dicomInputStream.readFileMetaInformation();
 		
-			writeAttributesToFile( beforeanonymisation, fileName);
+			writeAttributesToFile( attributes, fileName);
 			anonymizePatientAttributes(attributes);
-		
-		    try (DicomOutputStream dos = new DicomOutputStream(new FileOutputStream(outputFile), null)) {
+		     
+			logger.info("exporting anon dicom to output file: {}", outputFile);
+
+		    try (DicomOutputStream dos = new DicomOutputStream(new FileOutputStream(outputFile), "TEST")) {
             	 
             	 dos.writeDataset( attributes, dicomInputStream.readFileMetaInformation());
              }
@@ -118,7 +116,8 @@ private void writeAttributesToFile(Attributes beforeanonymisation, String fileNa
     	
     	for (int tag : attributes.tags()) {
     		
-    		
+        	logger.debug("current tag : {}",tag);
+
     		
     	    VR vr = attributes.getVR(tag); 
     	    
@@ -129,15 +128,17 @@ private void writeAttributesToFile(Attributes beforeanonymisation, String fileNa
     			}
     	else if (tag == Tag.TransferSyntaxUID   ) {
     	 
-			 
+        		logger.debug("TransferSyntaxUID ignored : {}",tag);
+
     	        continue;
 			 }    
+    		
     	    
     	    else if (vr != null && vr == (VR.PN)) { 
     	    
     	    	attributes.setString(tag, VR.PN, "ANONYME");
     	    	
-    	    } else if (vr != null && vr == (VR.DA) || vr.equals(VR.DT)) { 
+    	    } else if (vr != null && (vr == (VR.DA) || vr.equals(VR.DT))) { 
     	    	attributes.setString(tag, vr, "19000101");
     	    } else if (vr != null && vr ==(VR.CS)  ) { 
     	    	attributes.setString(tag, vr, "");
@@ -147,7 +148,7 @@ private void writeAttributesToFile(Attributes beforeanonymisation, String fileNa
     	    	attributes.setString(tag, vr, "");
     	    } else if (vr != null && vr ==(VR.SQ)) {
     	    	attributes.remove(tag);
-    	    } else if (vr != null && vr ==(VR.OW) || vr ==(VR.OF) || vr == (VR.OB) || vr ==(VR.UN)) { 
+    	    } else if (vr != null && (vr ==(VR.OW) || vr ==(VR.OF) || vr == (VR.OB) || vr ==(VR.UN)) ) { 
     	    	attributes.remove(tag); 
     	    
     	    }

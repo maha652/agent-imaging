@@ -75,7 +75,7 @@ public  void anonymizeDicomFiles(File directory) throws DicomException, IOExcept
             }
             
             
-            /* j'ai pas reussi a le faire en liste , j'ai testé pour un seul DICOM */
+            // j'ai pas reussi a le faire en liste , j'ai testé pour un seul DICOM 
             
 
             File anonymizedFile = new File("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\destination_dicom\\dicom1.dcm");

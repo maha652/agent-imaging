@@ -8,10 +8,9 @@ import java.io.IOException;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.VR;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
-
-import fr.gustaveroussy.imaging.ImagingApplication;
 
 
 
@@ -19,8 +18,7 @@ import fr.gustaveroussy.imaging.ImagingApplication;
 	
 	
 
-	private final ImagingApplication imagingApplication = new ImagingApplication();
-	
+	static final Logger logger = LoggerFactory.getLogger(ImagingController.class);	
 	
 	 
 		private void writeAttributesToFile(Attributes beforeanonymisation, String fileName) {
