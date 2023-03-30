@@ -46,13 +46,13 @@ public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.c
 	
 
 		@Value("${path.to.input.file}")
-		private  String inputFile ; 
+		private  String OriginalDicomFile ; 
 		
 		
 	
 		
 		@Value("${path.to.output.file}")
-		private  String outputFile ;
+		private  String AnonymDicomFile ;
 		
 		
 		@Value("${path.to.fileName}")
@@ -72,8 +72,8 @@ SpringApplication.run(ImagingApplication.class, args);
 
 public void run(String... args) throws Exception {
 	     
-	      logger.info("Processing input file: {}", inputFile);
-		  try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream((inputFile)))) {
+	      logger.info("Processing input file: {}", OriginalDicomFile);
+		  try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream((OriginalDicomFile)))) {
 			
 			Attributes attributes = dicomInputStream.readFileMetaInformation();
 			Attributes beforeanonymisation = dicomInputStream.readFileMetaInformation();
@@ -81,9 +81,9 @@ public void run(String... args) throws Exception {
 			writeAttributesToFile( beforeanonymisation, fileName);
 			anonymizePatientAttributes(attributes);
 		
-		    try (DicomOutputStream dos = new DicomOutputStream(new FileOutputStream(outputFile), "tsuid")) {
+		    try (DicomOutputStream dos = new DicomOutputStream(new FileOutputStream(AnonymDicomFile), "tsuid")) {
             	 
-            	 dos.writeDataset( attributes, dicomInputStream.readFileMetaInformation());
+            	 dos.writeDataset( attributes, dicomInputStream.readDataset());
              }
              
              
@@ -111,7 +111,7 @@ private void writeAttributesToFile(Attributes beforeanonymisation, String fileNa
 
 
 
-    private void anonymizePatientAttributes(Attributes attributes) {
+    private Attributes anonymizePatientAttributes(Attributes attributes) {
     	logger.debug("Anonymizing patient attributes...");
     	Attributes anonymizedAttributes = new Attributes();
     	anonymizedAttributes.addAll(attributes, false);
@@ -162,7 +162,7 @@ private void writeAttributesToFile(Attributes beforeanonymisation, String fileNa
     	logger.debug("anonymisation" , tag);  
     	    
     	}
-    	return ;
+    	return attributes  ;
     	
     	
     	
