@@ -1,6 +1,6 @@
 package fr.gustaveroussy.imaging;
 import org.dcm4che3.io.DicomInputStream;
-
+import org.dcm4che3.io.DicomOutputStream;
 import org.dcm4che3.data.VR;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,13 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
+import org.dcm4che3.util.UIDUtils;
 
-import org.dcm4che3.io.DicomOutputStream;
-
-
-
-
-import java.io.BufferedWriter;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -23,33 +18,18 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-
-	
 @SpringBootApplication
-
-
-
 
 public class ImagingApplication implements CommandLineRunner {
 
 public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.class);
 
-
-	private static final Object[] String = null;
-	
-
-	
-
 		@Value("${path.to.input.file}")
 		private  String OriginalDicomFile ; 
-		
-		
-	
+			
 		
 		@Value("${path.to.output.file}")
 		private  String AnonymDicomFile ;
@@ -59,9 +39,10 @@ public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.c
 		private  String fileName  ;
 		
 		
+		@Value("${path.to.test}")
+		private  String test  ;
 		
-
-
+		
   public static void main(String[] args) {	
   logger.info("Starting the Imaging Application...");  
 
@@ -73,48 +54,139 @@ SpringApplication.run(ImagingApplication.class, args);
 public void run(String... args) throws Exception {
 	     
 	      logger.info("Processing input file: {}", OriginalDicomFile);
+	           
 		  try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream((OriginalDicomFile)))) {
-			
+			  
 			Attributes attributes = dicomInputStream.readFileMetaInformation();
-			Attributes beforeanonymisation = dicomInputStream.readFileMetaInformation();
+			Attributes beforeanonymisation = dicomInputStream.readDataset(); 
+            AddSampleIdToDicom(attributes);
+			writeAttributesToFile(beforeanonymisation, attributes , fileName );
+			anonymizePatientAttributes(attributes); 
 		
-			writeAttributesToFile( beforeanonymisation, fileName);
-			anonymizePatientAttributes(attributes);
-		
-		    try (DicomOutputStream dos = new DicomOutputStream(new FileOutputStream(AnonymDicomFile), "tsuid")) {
-            	 
-            	 dos.writeDataset( attributes, dicomInputStream.readDataset());
-             }
-             
-             
+				        
+	
+			
+			
+			}
+          
 		  }
-             
+		  
+
 	        
+
+
+private void AddSampleIdToDicom(Attributes attributes) {
+	logger.debug("Add Sample ID");
+
+   
+ 
+    String uniqueIdentifier = UIDUtils.createUID();
+    System.out.println("SampleId généré : " + uniqueIdentifier);
+    try {
+  
+    	attributes.setString(0x00210011, VR.LO, uniqueIdentifier );
+     
+     
+     
+    } catch (Exception e) {
+       
+        logger.error("Erreur lors de l'ajout de l'attribut personnalisé 'SampleID' : " + e.getMessage());
+    }
+    
+
 } 
 
-private void writeAttributesToFile(Attributes beforeanonymisation, String fileName) {
-	logger.debug("Writing attributes to file: {}", fileName);
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+
+
+private void writeAttributesToFile(Attributes beforeanonymisation, Attributes attributes,String fileName ) {
+    logger.debug("Writing attributes to file: {}", fileName);
+    try (FileWriter fileWriter = new FileWriter(fileName)) {
+        int[] tagsToExtract = {
+            Tag.PatientName,
+            Tag.InstitutionName,
+            Tag.StudyDescription,  
+            0x00210011
+         
+        };
+        
+   
+        
         for (int tag : beforeanonymisation.tags()) {
-            VR vr = beforeanonymisation.getVR(tag);
-            String value = beforeanonymisation.getString(tag);
-            String line = tag + " " + vr + " " + value;
-            writer.write(line);
-            writer.newLine();
+            if (contains(tagsToExtract, tag)) {
+                String tagValue = beforeanonymisation.getString(tag);
+                
+                logger.debug("Tag ID : {}", tag);
+                
+               
+                String label = "";
+                if (tag == Tag.PatientName) {
+                    label = "PatientName";
+                } else if (tag == Tag.InstitutionName) {
+                    label = "organisation";
+                } else if (tag == Tag.StudyDescription) {
+                    label = "technology";
+                }
+                else if (tag == 0x00210011) {
+                    label = "SampleId";
+                }
+               
+                
+                
+                
+
+      
+                fileWriter.write(label + ": " + tagValue);
+                
+                fileWriter.write(System.lineSeparator());
+               
+           
+                
+                
+            }
+            
+           
         }
+       String sampleIDValue = attributes.getString(0x00210011);
+        if (sampleIDValue != null) {
+            fileWriter.write("SampleID: " + sampleIDValue);
+            fileWriter.write(System.lineSeparator());
+        }
+      
+        
     } catch (IOException e) {
-    	logger.error("Error writing attributes to file: {}", fileName, e);
+        logger.error("Error writing attributes to file: {}", fileName, e);
         e.printStackTrace();
     }
 }
-    
 
 
 
-    private Attributes anonymizePatientAttributes(Attributes attributes) {
+
+
+
+private boolean contains(int[] array, int value) {
+    for (int element : array) {
+        if (element == value) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+
+
+
+
+
+ 
+   
+
+
+
+private Attributes anonymizePatientAttributes(Attributes attributes ) {
     	logger.debug("Anonymizing patient attributes...");
-    	Attributes anonymizedAttributes = new Attributes();
-    	anonymizedAttributes.addAll(attributes, false);
+    	
     	
     	for (int tag : attributes.tags()) {
     		
@@ -124,14 +196,19 @@ private void writeAttributesToFile(Attributes beforeanonymisation, String fileNa
     	    
     	    
     	if (tag == Tag.StudyInstanceUID || tag == Tag.SeriesInstanceUID || tag == Tag.SOPClassUID || 
-    			     tag == Tag.ImagePositionPatient || tag == Tag.PixelData ) {
+    			     tag == Tag.ImagePositionPatient || tag == Tag.PixelData || tag == 0x00210011 ) {
     			     continue;
     			}
     	else if (tag == Tag.TransferSyntaxUID   ) {
     		logger.debug(" transferSyntaxUID_tag : {}" , tag);
+    		
+    		
 			 
     	        continue;
-			 }    
+			 }  
+    	
+	
+  
     	    
     	    else if( (vr != null && vr == (VR.PN))) { 
     	    
@@ -159,25 +236,26 @@ private void writeAttributesToFile(Attributes beforeanonymisation, String fileNa
     	    
     	    }
     	    
-    	logger.debug("anonymisation" , tag);  
+    	logger.debug("anonymisation" , tag);
+ 
+    	
     	    
     	}
-    	return attributes  ;
-    	
-    	
-    	
-    }
-    
-  
     	
     
+        return (attributes ) ;
+        
     
+      	
+    	
 }
+    
+    
+     
+    
+}      
 	
 	
-
-
-
 
 
 
