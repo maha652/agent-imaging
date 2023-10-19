@@ -5,6 +5,9 @@ package fr.gustaveroussy.imaging.services;
 import java.io.File;
 import java.io.IOException;
 
+import org.dcm4che3.data.Attributes;
+import org.dcm4che3.data.Tag;
+import org.dcm4che3.data.VR;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,66 +36,84 @@ public class DicomAnonymizerTest {
         File destinationDirectory = new File("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\destination_dicom");
 
         
-        // Copie des fichiers DICOM du dossier source vers le dossier de destination
-        //dicomAnonymizer.copyDicomFiles(sourceDirectory, destinationDirectory);
-
-        // Anonymisation des fichiers DICOM dans le dossier de destination
-        //dicomAnonymizer.anonymizeDicomFiles(destinationDirectory);
-   
+        
     }
-
-
-
-public  void anonymizeDicomFiles(File directory) throws DicomException, IOException {
-    // Parcours des fichiers DICOM du dossier
-    for (File file : directory.listFiles()) {
-        if (file.getName().endsWith(".dcm")) {
-        	logger.debug("file {}",file.getAbsolutePath());
-            // Chargement du fichier DICOM dans un objet AttributeList
-            AttributeList attributeList = new AttributeList();
-            attributeList.read(file.getAbsolutePath());
-
-            // Anonymisation des attributs
-            attributeList.remove(TagFromName.PatientName);
-            attributeList.remove(TagFromName.PatientID);
-            attributeList.remove(TagFromName.PatientBirthDate);
-            attributeList.remove(TagFromName.AccessionNumber);
-            attributeList.remove(TagFromName.StudyDate);
-            attributeList.remove(TagFromName.StudyTime);
-            attributeList.remove(TagFromName.InstitutionName);
-            attributeList.remove(TagFromName.ReferringPhysicianName);
-
-            // Enregistrement des modifications dans le fichier DICOM //
-           // attributeList.write //
-
-
-            // Write the modified DICOM file to the destination folder
-            
-           // List<DicomFile> dicomFiles = dicomDir.find(DicomDirectory.getByFileSet);//
-            
-          /*  for (DicomFile dicomFile : dicomFiles) {
-                dicomFile.write(dicomFile.getPath(), DicomOutputStream.WriteEncapsulated, false);
-            }
-            
-            
-            /* j'ai pas reussi a le faire en liste , j'ai testé pour un seul DICOM */
-            
-
-         File anonymizedFile = new File("C:\\Users\\m_graa\\Desktop\\stage_bioinfo\\destination_dicom\\dicom1.dcm");
-            
-            
-            attributeList.write(anonymizedFile  ,  TransferSyntax.ExplicitVRLittleEndian, true, true);
-
-            
-            
-            
-            
-            
-            
-            
-        }
-    }
+	private Attributes anonymizePatientAttributes(Attributes attributes ) {
+    	logger.debug("Anonymizing patient attributes...");
+    	
+    	
+    	for (int tag : attributes.tags()) {
+    		
+    		logger.debug(" tag : {}" , tag);
+    		
+    	    VR vr = attributes.getVR(tag); 
+    	    
+    	    
+    	if (tag == Tag.StudyInstanceUID || tag == Tag.SeriesInstanceUID || tag == Tag.SOPClassUID || 
+    			     tag == Tag.ImagePositionPatient || tag == Tag.PixelData || tag == 0x00210011 || tag ==0x0028 || tag == 0x7FE0 || tag == 0x0002  ) {
+    			     continue;
+    			}
+    	else if (tag == Tag.TransferSyntaxUID   ) {
+    		logger.debug(" transferSyntaxUID_tag : {}" , tag);
+    		
+    		
+			 
+    	        continue;
+			 }  
+    	
+	
+  
+    	    
+    	    else if( (vr != null && vr == (VR.PN))) { 
+    	    
+    	    	attributes.setString(tag, VR.PN, "ANONYME");
+    	    	logger.debug(" VR.PN : {}" , tag);
+    	    	
+    	    } else if ((vr != null && vr.equals(VR.DA) || vr.equals(VR.DT))) { 
+    	    	attributes.setString(tag, vr, "19000101");
+    	    	logger.debug(" VR.DA : {}" , tag);
+    	    } else if ((vr != null && vr.equals(VR.CS)  )) { 
+    	    	attributes.setString(tag, vr, "");
+    	    	logger.debug(" VR.CS : {}" , tag);
+    	    } else if ((vr != null && vr.equals(VR.SH))) {
+    	    	attributes.setString(tag, vr, "");
+    	    	logger.debug(" VR.SH : {}" , tag);
+    	    } else if ((vr != null &&  vr.equals(VR.LO)) ){ 
+    	    	attributes.setString(tag, vr, "");
+    	    	logger.debug(" VR.LO : {}" , tag);
+    	    } else if ((vr != null && vr.equals(VR.SQ))) {
+    	    	attributes.remove(tag);
+    	    	logger.debug(" VR.SQ : {}" , tag);
+    	    } else if ((vr != null && vr.equals(VR.OW) || vr.equals(VR.OF) || vr.equals(VR.OB) || vr.equals(VR.UN))) { 
+    	    	attributes.remove(tag); 
+    	    	logger.debug(" VR.OW, OF, OB ,UN : {}" , tag);
+    	    
+    	    }
+    	    
+    	logger.debug("anonymisation" , tag);
+ 
+    	
+    	    
+    	}
+    	
+    
+        return (attributes ) ;
+        
+    
+      	
+    	
 }
+    
+    
+     
+    
+
+
+	
+	
+
+
+
 }
 
 

@@ -11,13 +11,10 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 import org.dcm4che3.util.UIDUtils;
 
-
+import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,11 +25,11 @@ public class ImagingApplication implements CommandLineRunner {
 public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.class);
 
 		@Value("${path.to.input.file}")
-		private  String OriginalDicomFile ; 
+		private  String originalDicomFile ; 
 			
 		
 		@Value("${path.to.output.file}")
-		private  String AnonymDicomFile ;
+		private  String anonymDicomFile ;
 		
 		
 		@Value("${path.to.fileName}")
@@ -43,38 +40,51 @@ public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.c
 		private  String test  ;
 		
 		
-  public static void main(String[] args) {	
-  logger.info("Starting the Imaging Application...");  
+		public static void main(String[] args) {	
+			logger.info("Starting the Imaging Application...");  
 
-SpringApplication.run(ImagingApplication.class, args);
+			SpringApplication.run(ImagingApplication.class, args);
 		
-	}
-@Override
+		}
 
-public void run(String... args) throws Exception {
+		@Override
+		public void run(String... args) throws Exception {
 	     
-	      logger.info("Processing input file: {}", OriginalDicomFile);
+			logger.info("Processing input file: {}", originalDicomFile);
 	           
-		  try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream((OriginalDicomFile)))) {
-			  
-			Attributes attributes = dicomInputStream.readFileMetaInformation();
-			Attributes beforeanonymisation = dicomInputStream.readDataset(); 
-            AddSampleIdToDicom(attributes);
-			writeAttributesToFile(beforeanonymisation, attributes , fileName );
-			anonymizePatientAttributes(attributes); 
-		
-				        
-	
-			
-			
+			try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream((originalDicomFile)))) {
+				Attributes attributes = dicomInputStream.readFileMetaInformation();
+				Attributes beforeanonymisation = dicomInputStream.readDataset(); 
+	            AddSampleIdToDicom(attributes);
+				writeAttributesToFile(beforeanonymisation, attributes , fileName );
+				anonymizePatientAttributes(attributes); 		
 			}
-          
-		  }
+		 
+			try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream(originalDicomFile));
+					DicomOutputStream dicomOutputStream = new DicomOutputStream(new File(anonymDicomFile));) {
+			    
+			    Attributes fmi = dicomInputStream.readFileMetaInformation();
+			    Attributes dataset = dicomInputStream.readDataset();
+			    anonymizePatientAttributes(dataset);
+			    
+			    			
+			    fmi = dataset.createFileMetaInformation(fmi.getString(Tag.TransferSyntaxUID));
+			    dicomOutputStream.writeDataset(fmi, dataset);
+			    
+			}
+			
 		  
+		  
+		  
+} 
 
-	        
 
 
+
+
+
+
+		  
 private void AddSampleIdToDicom(Attributes attributes) {
 	logger.debug("Add Sample ID");
 
@@ -159,11 +169,6 @@ private void writeAttributesToFile(Attributes beforeanonymisation, Attributes at
     }
 }
 
-
-
-
-
-
 private boolean contains(int[] array, int value) {
     for (int element : array) {
         if (element == value) {
@@ -175,110 +180,35 @@ private boolean contains(int[] array, int value) {
 
 
 
-
-
-
-
- 
+ private Attributes anonymizePatientAttributes(Attributes attributes) {
+	
+	 
+		 
+for (int tag : attributes.tags()) {  
+	String tagValueanonym = attributes.getString(tag);
+	 logger.debug("Tag ID_anonym : {}", tag);
+     if (tag == Tag.PatientName) {
+    	attributes.setString(Tag.PatientName , VR.PN, "ANONYME");
+    	logger.info(tagValueanonym);
+    	
+   	
+     } else if (tag == Tag.PatientID) {
+    	attributes.setString(Tag.PatientID, VR.LO, "190010000AA");
+    	logger.info(tagValueanonym);
+    
+       
    
-
-
-
-private Attributes anonymizePatientAttributes(Attributes attributes ) {
-    	logger.debug("Anonymizing patient attributes...");
-    	
-    	
-    	for (int tag : attributes.tags()) {
-    		
-    		logger.debug(" tag : {}" , tag);
-    		
-    	    VR vr = attributes.getVR(tag); 
-    	    
-    	    
-    	if (tag == Tag.StudyInstanceUID || tag == Tag.SeriesInstanceUID || tag == Tag.SOPClassUID || 
-    			     tag == Tag.ImagePositionPatient || tag == Tag.PixelData || tag == 0x00210011 ) {
-    			     continue;
-    			}
-    	else if (tag == Tag.TransferSyntaxUID   ) {
-    		logger.debug(" transferSyntaxUID_tag : {}" , tag);
-    		
-    		
-			 
-    	        continue;
-			 }  
-    	
-	
-  
-    	    
-    	    else if( (vr != null && vr == (VR.PN))) { 
-    	    
-    	    	attributes.setString(tag, VR.PN, "ANONYME");
-    	    	logger.debug(" VR.PN : {}" , tag);
-    	    	
-    	    } else if ((vr != null && vr.equals(VR.DA) || vr.equals(VR.DT))) { 
-    	    	attributes.setString(tag, vr, "19000101");
-    	    	logger.debug(" VR.DA : {}" , tag);
-    	    } else if ((vr != null && vr.equals(VR.CS)  )) { 
-    	    	attributes.setString(tag, vr, "");
-    	    	logger.debug(" VR.CS : {}" , tag);
-    	    } else if ((vr != null && vr.equals(VR.SH))) {
-    	    	attributes.setString(tag, vr, "");
-    	    	logger.debug(" VR.SH : {}" , tag);
-    	    } else if ((vr != null &&  vr.equals(VR.LO)) ){ 
-    	    	attributes.setString(tag, vr, "");
-    	    	logger.debug(" VR.LO : {}" , tag);
-    	    } else if ((vr != null && vr.equals(VR.SQ))) {
-    	    	attributes.remove(tag);
-    	    	logger.debug(" VR.SQ : {}" , tag);
-    	    } else if ((vr != null && vr.equals(VR.OW) || vr.equals(VR.OF) || vr.equals(VR.OB) || vr.equals(VR.UN))) { 
-    	    	attributes.remove(tag); 
-    	    	logger.debug(" VR.OW, OF, OB ,UN : {}" , tag);
-    	    
-    	    }
-    	    
-    	logger.debug("anonymisation" , tag);
- 
-    	
-    	    
-    	}
-    	
+    }
     
-        return (attributes ) ;
-        
     
-      	
-    	
+    logger.debug("anonymisation : {}" ,Tag.PatientName );
 }
-    
-    
-     
-    
-}      
-	
 	
 
+	 return attributes; 
+}   
 
-
-
-
-
-
-
-
-
-
-	
-
-
-
-
-
-
-
-
-
-
-
+}
 
 
 
