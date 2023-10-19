@@ -62,27 +62,18 @@ public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.c
 		 
 			try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream(originalDicomFile));
 					DicomOutputStream dicomOutputStream = new DicomOutputStream(new File(anonymDicomFile));) {
-			    
+				
 			    Attributes fmi = dicomInputStream.readFileMetaInformation();
 			    Attributes dataset = dicomInputStream.readDataset();
+			    AddSampleIdToDicom(dataset);
 			    anonymizePatientAttributes(dataset);
-			    
-			    			
 			    fmi = dataset.createFileMetaInformation(fmi.getString(Tag.TransferSyntaxUID));
 			    dicomOutputStream.writeDataset(fmi, dataset);
-			    
+	            logger.info("Sample ID ajouté : {}", dataset.getString(0x00210011));
+	            writeAttributesToFile(dataset, dataset , test );
 			}
-			
-		  
-		  
-		  
+					  
 } 
-
-
-
-
-
-
 
 		  
 private void AddSampleIdToDicom(Attributes attributes) {
@@ -90,11 +81,11 @@ private void AddSampleIdToDicom(Attributes attributes) {
 
    
  
-    String uniqueIdentifier = UIDUtils.createUID();
-    System.out.println("SampleId généré : " + uniqueIdentifier);
+    String SampleId = UIDUtils.createUID();
+    System.out.println("SampleId généré : " + SampleId);
     try {
   
-    	attributes.setString(0x00210011, VR.LO, uniqueIdentifier );
+    	attributes.setString(0x00210011, VR.LO, SampleId );
      
      
      
@@ -186,8 +177,9 @@ private boolean contains(int[] array, int value) {
 		 
 for (int tag : attributes.tags()) {  
 	String tagValueanonym = attributes.getString(tag);
+
 	 logger.debug("Tag ID_anonym : {}", tag);
-     if (tag == Tag.PatientName) {
+	 if (tag == Tag.PatientName) {
     	attributes.setString(Tag.PatientName , VR.PN, "ANONYME");
     	logger.info(tagValueanonym);
     	
@@ -195,13 +187,26 @@ for (int tag : attributes.tags()) {
      } else if (tag == Tag.PatientID) {
     	attributes.setString(Tag.PatientID, VR.LO, "190010000AA");
     	logger.info(tagValueanonym);
+      }
+	 
+	 
+     else if (tag == Tag.PatientBirthDate) {
+     	attributes.setString(Tag.PatientBirthDate, VR.DA, "190010000AA");
+     	logger.info(tagValueanonym);
+       }
+	 
+     else if (tag == Tag.PatientAddress) {
+      	attributes.setString(Tag.PatientAddress, VR.LO, "voie/rue/pays");
+      	logger.info(tagValueanonym);
+        }
+  
     
-       
+	
+    
+    logger.debug("anonymisation : {}" , tagValueanonym);
+  
    
-    }
-    
-    
-    logger.debug("anonymisation : {}" ,Tag.PatientName );
+   
 }
 	
 
