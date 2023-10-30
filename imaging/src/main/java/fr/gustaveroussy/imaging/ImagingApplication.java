@@ -24,6 +24,10 @@ public class ImagingApplication implements CommandLineRunner {
 
 public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.class);
 
+
+
+
+
 		@Value("${path.to.input.file}")
 		private  String originalDicomFile ; 
 			
@@ -37,7 +41,21 @@ public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.c
 		
 		
 		@Value("${path.to.test}")
-		private  String test  ;
+		private  String attributs_apres_anonymisation  ;
+		
+		
+		
+	
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		
 		
 		public static void main(String[] args) {	
@@ -55,7 +73,7 @@ public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.c
 			try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream((originalDicomFile)))) {
 				Attributes attributes = dicomInputStream.readFileMetaInformation();
 				Attributes beforeanonymisation = dicomInputStream.readDataset(); 
-	            AddSampleIdToDicom(attributes);
+	           // AddSampleIdToDicom(attributes);//
 				writeAttributesToFile(beforeanonymisation, attributes , fileName );
 				anonymizePatientAttributes(attributes); 		
 			}
@@ -63,110 +81,63 @@ public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.c
 			try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream(originalDicomFile));
 					DicomOutputStream dicomOutputStream = new DicomOutputStream(new File(anonymDicomFile));) {
 				
+				
+				
 			    Attributes fmi = dicomInputStream.readFileMetaInformation();
 			    Attributes dataset = dicomInputStream.readDataset();
-			    AddSampleIdToDicom(dataset);
+			   // AddSampleIdToDicom(dataset);//
 			    anonymizePatientAttributes(dataset);
 			    fmi = dataset.createFileMetaInformation(fmi.getString(Tag.TransferSyntaxUID));
 			    dicomOutputStream.writeDataset(fmi, dataset);
 	            logger.info("Sample ID ajouté : {}", dataset.getString(0x00210011));
-	            writeAttributesToFile(dataset, dataset , test );
+	            writeAttributesToFile(dataset, dataset , attributs_apres_anonymisation );
 			}
 					  
 } 
 
 		  
-private void AddSampleIdToDicom(Attributes attributes) {
-	logger.debug("Add Sample ID");
 
-   
- 
-    String SampleId = UIDUtils.createUID();
-    System.out.println("SampleId généré : " + SampleId);
-    try {
-  
-    	attributes.setString(0x00210011, VR.LO, SampleId );
-     
-     
-     
-    } catch (Exception e) {
-       
-        logger.error("Erreur lors de l'ajout de l'attribut personnalisé 'SampleID' : " + e.getMessage());
-    }
-    
-
-} 
 
 
 
 private void writeAttributesToFile(Attributes beforeanonymisation, Attributes attributes,String fileName ) {
     logger.debug("Writing attributes to file: {}", fileName);
-    try (FileWriter fileWriter = new FileWriter(fileName)) {
-        int[] tagsToExtract = {
-            Tag.PatientName,
-            Tag.InstitutionName,
-            Tag.StudyDescription,  
-            0x00210011
-         
-        };
-        
-   
+    try (FileWriter fileWriter = new FileWriter(fileName)) {  
         
         for (int tag : beforeanonymisation.tags()) {
-            if (contains(tagsToExtract, tag)) {
-                String tagValue = beforeanonymisation.getString(tag);
-                
-                logger.debug("Tag ID : {}", tag);
-                
-               
-                String label = "";
-                if (tag == Tag.PatientName) {
-                    label = "PatientName";
-                } else if (tag == Tag.InstitutionName) {
-                    label = "organisation";
-                } else if (tag == Tag.StudyDescription) {
-                    label = "technology";
-                }
-                else if (tag == 0x00210011) {
-                    label = "SampleId";
-                }
-               
-                
-                
-                
+            String label = "";
 
-      
+        	switch(tag) {
+        		case Tag.PatientID:
+        			label = "patientId";
+        			break;
+        		case Tag.InstitutionName:
+        			label = "organisation";
+        			break;
+        		case Tag.StudyDescription:
+        			label = "technology";
+        			break;
+        		default:
+        			//logger	
+        	}
+            
+                
+            if(!label.isEmpty()) {
+            	String tagValue = beforeanonymisation.getString(tag);
                 fileWriter.write(label + ": " + tagValue);
                 
                 fileWriter.write(System.lineSeparator());
-               
-           
-                
-                
             }
             
            
         }
-       String sampleIDValue = attributes.getString(0x00210011);
-        if (sampleIDValue != null) {
-            fileWriter.write("SampleID: " + sampleIDValue);
-            fileWriter.write(System.lineSeparator());
-        }
+     
       
         
     } catch (IOException e) {
         logger.error("Error writing attributes to file: {}", fileName, e);
         e.printStackTrace();
     }
-}
-
-private boolean contains(int[] array, int value) {
-    for (int element : array) {
-        if (element == value) {
-            return true;
-        }
-    }
-    return false;
 }
 
 
@@ -185,22 +156,35 @@ for (int tag : attributes.tags()) {
     	
    	
      } else if (tag == Tag.PatientID) {
-    	attributes.setString(Tag.PatientID, VR.LO, "190010000AA");
+    	attributes.setString(Tag.PatientID, VR.LO, "NIP");
     	logger.info(tagValueanonym);
       }
 	 
 	 
      else if (tag == Tag.PatientBirthDate) {
-     	attributes.setString(Tag.PatientBirthDate, VR.DA, "190010000AA");
+     	attributes.setString(Tag.PatientBirthDate, VR.DA, "BirthDate");
      	logger.info(tagValueanonym);
        }
 	 
      else if (tag == Tag.PatientAddress) {
-      	attributes.setString(Tag.PatientAddress, VR.LO, "voie/rue/pays");
+      	attributes.setString(Tag.PatientAddress, VR.LO, "street/country");
       	logger.info(tagValueanonym);
         }
   
-    
+     else if (tag == Tag.PatientSex) {
+       	attributes.setString(Tag.PatientSex, VR.CS, "M/F");
+       	logger.info(tagValueanonym);
+         }
+	 
+     else if (tag == Tag.PatientAge) {
+        	attributes.setString(Tag.PatientAge, VR.AS, "Age");
+        	logger.info(tagValueanonym);
+          }
+	 
+     else if (tag == Tag.InstitutionName) {
+     	attributes.setString(Tag.InstitutionName, VR.LO, "HOSPITAL");
+     	logger.info(tagValueanonym);
+       }
 	
     
     logger.debug("anonymisation : {}" , tagValueanonym);
@@ -211,6 +195,7 @@ for (int tag : attributes.tags()) {
 	
 
 	 return attributes; 
+	
 }   
 
 }
