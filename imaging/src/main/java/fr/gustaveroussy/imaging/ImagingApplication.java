@@ -18,46 +18,24 @@ import java.io.IOException;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+
 @SpringBootApplication
 
 public class ImagingApplication implements CommandLineRunner {
+	
+
 
 public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.class);
 
-
-
-
+String baseFileName = UIDUtils.createUID();
+String attributsBeforeAnonymisationFileName = baseFileName + ".csv";
+String dicomAnnonyFileName = baseFileName + ".dcm";
+String attributs_apres_anonymisation = baseFileName + "after.csv";
 
 		@Value("${path.to.input.file}")
 		private  String originalDicomFile ; 
-			
-		
-		@Value("${path.to.output.file}")
-		private  String anonymDicomFile ;
-		
-		
-		@Value("${path.to.fileName}")
-		private  String fileName  ;
-		
-		
-		@Value("${path.to.test}")
-		private  String attributs_apres_anonymisation  ;
-		
-		
-		
-	
-
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+				
 		public static void main(String[] args) {	
 			logger.info("Starting the Imaging Application...");  
 
@@ -70,23 +48,19 @@ public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.c
 	     
 			logger.info("Processing input file: {}", originalDicomFile);
 	           
-			try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream((originalDicomFile)))) {
-				Attributes attributes = dicomInputStream.readFileMetaInformation();
-				Attributes beforeanonymisation = dicomInputStream.readDataset(); 
-	           // AddSampleIdToDicom(attributes);//
-				writeAttributesToFile(beforeanonymisation, attributes , fileName );
-				anonymizePatientAttributes(attributes); 		
-			}
+			
 		 
 			try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream(originalDicomFile));
-					DicomOutputStream dicomOutputStream = new DicomOutputStream(new File(anonymDicomFile));) {
+					DicomOutputStream dicomOutputStream = new DicomOutputStream(new File(dicomAnnonyFileName));) {
 				
 				
 				
 			    Attributes fmi = dicomInputStream.readFileMetaInformation();
 			    Attributes dataset = dicomInputStream.readDataset();
-			   // AddSampleIdToDicom(dataset);//
-			    anonymizePatientAttributes(dataset);
+	
+				writeAttributesToFile(dataset, dataset , attributsBeforeAnonymisationFileName );
+
+			    anonymizePatientAttributes(dataset , dicomAnnonyFileName);
 			    fmi = dataset.createFileMetaInformation(fmi.getString(Tag.TransferSyntaxUID));
 			    dicomOutputStream.writeDataset(fmi, dataset);
 	            logger.info("Sample ID ajouté : {}", dataset.getString(0x00210011));
@@ -95,54 +69,49 @@ public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.c
 					  
 } 
 
-		  
+		
+		private void writeAttributesToFile(Attributes beforeanonymisation, Attributes attributes, String fileName) {
+		    logger.debug("Writing attributes to file: {}", fileName);
+
+		    try (FileWriter fileWriter = new FileWriter(fileName)) {
+		        String[] labels = {"organisation", "technology", "patientId"};
+		        String[] values = new String[3];
+
+		        for (int tag : beforeanonymisation.tags()) {
+		           
+
+		            switch (tag) {
+		                case Tag.PatientID:
+		                    values[2] = beforeanonymisation.getString(tag);
+		                    break;
+		                case Tag.InstitutionName:
+		                    values[0] = beforeanonymisation.getString(tag);
+		                    break;
+		                case Tag.StudyDescription:
+		                    values[1] = beforeanonymisation.getString(tag);
+		                    break;
+		                default:
+		                
+		                    break;
+		            }
+		        }
+
+		      
+		        fileWriter.write(String.join(";", labels));
+		        fileWriter.write(System.lineSeparator());
+
+		      
+		        fileWriter.write(String.join(";", values));
+		    } catch (IOException e) {
+		        logger.error("Error writing attributes to file: {}", fileName, e);
+		        e.printStackTrace();
+		    }
+		}
 
 
 
 
-private void writeAttributesToFile(Attributes beforeanonymisation, Attributes attributes,String fileName ) {
-    logger.debug("Writing attributes to file: {}", fileName);
-    try (FileWriter fileWriter = new FileWriter(fileName)) {  
-        
-        for (int tag : beforeanonymisation.tags()) {
-            String label = "";
-
-        	switch(tag) {
-        		case Tag.PatientID:
-        			label = "patientId";
-        			break;
-        		case Tag.InstitutionName:
-        			label = "organisation";
-        			break;
-        		case Tag.StudyDescription:
-        			label = "technology";
-        			break;
-        		default:
-        			//logger	
-        	}
-            
-                
-            if(!label.isEmpty()) {
-            	String tagValue = beforeanonymisation.getString(tag);
-                fileWriter.write(label + ": " + tagValue);
-                
-                fileWriter.write(System.lineSeparator());
-            }
-            
-           
-        }
-     
-      
-        
-    } catch (IOException e) {
-        logger.error("Error writing attributes to file: {}", fileName, e);
-        e.printStackTrace();
-    }
-}
-
-
-
- private Attributes anonymizePatientAttributes(Attributes attributes) {
+ private Attributes anonymizePatientAttributes(Attributes attributes , String anonymDicomFile) {
 	
 	 
 		 
