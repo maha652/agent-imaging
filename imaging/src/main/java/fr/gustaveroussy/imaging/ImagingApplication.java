@@ -29,9 +29,10 @@ public class ImagingApplication implements CommandLineRunner {
 public static final Logger logger = LoggerFactory.getLogger(ImagingApplication.class);
 
 String baseFileName = UIDUtils.createUID();
-String attributsBeforeAnonymisationFileName = baseFileName + ".csv";
+String baseFolderName = baseFileName;
+String attributsBeforeAnonymisationFileName = baseFileName + "_before.csv";
 String dicomAnnonyFileName = baseFileName + ".dcm";
-String attributs_apres_anonymisation = baseFileName + "after.csv";
+String attributs_apres_anonymisation = baseFileName + "_after.csv";
 
 		@Value("${path.to.input.file}")
 		private  String originalDicomFile ; 
@@ -48,10 +49,14 @@ String attributs_apres_anonymisation = baseFileName + "after.csv";
 	     
 			logger.info("Processing input file: {}", originalDicomFile);
 	           
-			
-		 
+			File baseFolder = new File(baseFolderName);
+	        if (!baseFolder.exists()) {
+	            baseFolder.mkdirs();
+	        }
+
+	
 			try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream(originalDicomFile));
-					DicomOutputStream dicomOutputStream = new DicomOutputStream(new File(dicomAnnonyFileName));) {
+					DicomOutputStream dicomOutputStream = new DicomOutputStream(new File(baseFolderName,dicomAnnonyFileName));) {
 				
 				
 				
@@ -60,35 +65,45 @@ String attributs_apres_anonymisation = baseFileName + "after.csv";
 	
 				writeAttributesToFile(dataset, dataset , attributsBeforeAnonymisationFileName );
 
-			    anonymizePatientAttributes(dataset , dicomAnnonyFileName);
+			    anonymizePatientAttributes(dataset ,  dicomAnnonyFileName);
 			    fmi = dataset.createFileMetaInformation(fmi.getString(Tag.TransferSyntaxUID));
 			    dicomOutputStream.writeDataset(fmi, dataset);
 	            logger.info("Sample ID ajouté : {}", dataset.getString(0x00210011));
 	            writeAttributesToFile(dataset, dataset , attributs_apres_anonymisation );
 			}
-					  
+	
+			
+			
+			
+					
+			
 } 
 
 		
 		private void writeAttributesToFile(Attributes beforeanonymisation, Attributes attributes, String fileName) {
 		    logger.debug("Writing attributes to file: {}", fileName);
+            
+		    try (FileWriter fileWriter = new FileWriter(baseFolderName + File.separator + fileName)) {
+		        String[] labels = {"datasetName","organisation", "patientId","projectName","technicalPlatform", "technology"};
+		        String[] values = new String[6];
+		        values[0] = "Dicom_metadata"; 
+		        values[3] = "Service imagerie diagnostique"; 
+		        values[4] = "imagerie"; 
 
-		    try (FileWriter fileWriter = new FileWriter(fileName)) {
-		        String[] labels = {"organisation", "technology", "patientId"};
-		        String[] values = new String[3];
 
 		        for (int tag : beforeanonymisation.tags()) {
-		           
-
+		        	
+		        	 
 		            switch (tag) {
+		          
 		                case Tag.PatientID:
 		                    values[2] = beforeanonymisation.getString(tag);
 		                    break;
 		                case Tag.InstitutionName:
-		                    values[0] = beforeanonymisation.getString(tag);
+		                    values[1] = beforeanonymisation.getString(tag);
 		                    break;
 		                case Tag.StudyDescription:
-		                    values[1] = beforeanonymisation.getString(tag);
+		                    values[5] = beforeanonymisation.getString(tag);
 		                    break;
 		                default:
 		                
