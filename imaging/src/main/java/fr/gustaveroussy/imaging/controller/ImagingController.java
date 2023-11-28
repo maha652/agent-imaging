@@ -22,7 +22,7 @@ public class ImagingController {
 
     @Autowired
     private ExtractMetadataDicomService extractMetadataDicomService;
-
+    
     @Value("${path.to.input.folder}")
     private String dicomFolder;
 
@@ -54,10 +54,10 @@ public class ImagingController {
         return "DICOM files processed successfully.";
     }
 
-private  void processDicomFile(File originalDicomFile) throws FileNotFoundException, IOException {
+private  void processDicomFile(File dicomFile) throws FileNotFoundException, IOException {
     	
     	
-        String baseFileName = getBaseFileName(originalDicomFile.getName());
+        String baseFileName = getBaseFileName(dicomFile.getName());
         String baseFolderName = baseFileName;
         String attributsBeforeAnonymisationFileName = baseFileName + "_before.csv";
         String dicomAnnonyFileName = baseFileName + "_anonyme.dcm";
@@ -68,10 +68,10 @@ private  void processDicomFile(File originalDicomFile) throws FileNotFoundExcept
             baseFolder.mkdirs();
         }
     
-    	 Attributes attributes = loadAttributesFromFile(originalDicomFile);
+    	 Attributes attributes = loadAttributesFromFile(dicomFile);
          extractMetadataDicomService.writeAttributesToFile(attributes, attributsBeforeAnonymisationFileName, baseFolderName);
          anonymisationDicomService.anonymizePatientAttributes(attributes,dicomAnnonyFileName);
-         try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream(originalDicomFile));
+         try (DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream(dicomFile));
         	  DicomOutputStream dicomOutputStream = new DicomOutputStream(new File(baseFolderName, dicomAnnonyFileName))) {
               Attributes outattributes = dicomInputStream.readFileMetaInformation();
        

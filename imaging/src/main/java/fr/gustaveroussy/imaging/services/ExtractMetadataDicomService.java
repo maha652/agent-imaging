@@ -13,24 +13,23 @@ import java.io.IOException;
 
 @Service
 public class ExtractMetadataDicomService {
-    @Autowired
-    @Value("${path.to.input.folder}")
-    private String dicomFolder;
+	 @Autowired
+	 @Value("${path.to.input.folder}")
+	 private String dicomFolder;
 
+	 
+	 
     
-    
-    
-    private static final Logger logger = LoggerFactory.getLogger(ExtractMetadataDicomService.class);
+   private static final Logger logger = LoggerFactory.getLogger(ExtractMetadataDicomService.class);
 
     public void writeAttributesToFile(Attributes beforeAnonymisation, String fileName, String baseFolderName) {
         logger.debug("Writing attributes to file: {}",dicomFolder );
 
         try (FileWriter fileWriter = new FileWriter(baseFolderName + File.separator + fileName)) {
-            String[] labels = {"datasetName", "organisation", "patientId", "projectName", "technicalPlatform", "technology"};
-            String[] values = new String[6];
+            String[] labels = {"datasetName", "organisationName", "datasetIds", "projectName", "protocolName"};
+            String[] values = new String[5];
             values[0] = "Dicom_metadata";
-            values[3] = "Service imagerie diagnostique";
-            values[4] = "imagerie";
+            values[3] = "Imaging";
 
             for (int tag : beforeAnonymisation.tags()) {
                 switch (tag) {
@@ -41,7 +40,7 @@ public class ExtractMetadataDicomService {
                         values[1] = beforeAnonymisation.getString(tag);
                         break;
                     case Tag.StudyDescription:
-                        values[5] = beforeAnonymisation.getString(tag);
+                        values[4] = beforeAnonymisation.getString(tag);
                         break;
                     default:
                         break;
