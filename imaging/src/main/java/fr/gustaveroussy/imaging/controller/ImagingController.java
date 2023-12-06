@@ -59,7 +59,7 @@ private  void processDicomFile(File dicomFile) throws FileNotFoundException, IOE
     	
         String baseFileName = getBaseFileName(dicomFile.getName());
         String baseFolderName = baseFileName;
-        String attributsBeforeAnonymisationFileName = baseFileName + "_before.csv";
+        String attributsBeforeAnonymisationFileName = baseFileName + "_kdi_template.json";
         String dicomAnnonyFileName = baseFileName + "_anonyme.dcm";
        
   

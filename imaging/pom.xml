@@ -61,6 +61,15 @@
     <version>5.5</version> 
 </dependency>
 
+  <dependency>
+    <groupId>org.json</groupId>
+    <artifactId>json</artifactId>
+    <version>20210307</version> <!-- Utilisez la dernière version disponible -->
+</dependency>
+
+
+
+
 
 		
 	</dependencies>
@@ -164,7 +173,7 @@
 	            <directory>src/main/resources</directory>
 	            <filtering>true</filtering>
 	           <excludes>
-	                <exclude>**/*.properties</exclude>
+	                <exclude>**/*.properties</exclude>  
 	            </excludes>  
 	        </resource>
  	    </resources>     
